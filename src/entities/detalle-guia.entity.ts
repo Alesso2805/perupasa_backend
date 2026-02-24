@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany } from 'ty
 import { GuiaVenta } from './guia-venta.entity';
 import { Producto } from './producto.entity';
 import { DetalleColor } from './detalle-color.entity';
+import { ColumnNumericTransformer } from '../utils/typeorm-transformers';
 
 @Entity()
 export class DetalleGuia {
@@ -17,10 +18,21 @@ export class DetalleGuia {
   @Column('int')
   cantidad: number;
 
-  @Column('decimal', { precision: 10, scale: 2 })
+  @Column({ default: 'Piezas' })
+  unidad: string;
+
+  @Column('decimal', {
+    precision: 10,
+    scale: 2,
+    transformer: new ColumnNumericTransformer(),
+  })
   precio_unitario: number;
 
-  @Column('decimal', { precision: 10, scale: 2 })
+  @Column('decimal', {
+    precision: 10,
+    scale: 2,
+    transformer: new ColumnNumericTransformer(),
+  })
   subtotal: number;
 
   @OneToMany(() => DetalleColor, (detalleColor) => detalleColor.detalleGuia, { cascade: true })

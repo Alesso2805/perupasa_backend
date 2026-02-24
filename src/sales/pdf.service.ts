@@ -41,20 +41,22 @@ const fonts = {
         {
           table: {
             headerRows: 1,
-            widths: ['auto', '*', 'auto', 'auto', 'auto'],
+            widths: ['auto', '*', 'auto', 'auto', 'auto', 'auto'],
             body: [
-              ['Cant.', 'Descripción', 'Unit.', 'Subtotal', 'Detalle Color'],
+              ['Cant.', 'Descripción', 'Color', 'Unid.', 'Precio', 'Subtotal'],
               ...guia.detalles.map((d) => [
                 d.cantidad,
                 d.producto.nombre,
-                d.precio_unitario,
-                d.subtotal,
-                {
-                   text: d.colores.map(c => `Col ${c.color.numero_color}: ${c.cantidad}`).join(', '),
-                   fontSize: 9
-                }
+                d.colores.map(c => c.color.numero_color).join(', '),
+                { text: d.unidad, fontSize: 8 },
+                { text: `S/ ${Number(d.precio_unitario).toFixed(2)}`, alignment: 'right' },
+                { text: `S/ ${Number(d.subtotal).toFixed(2)}`, alignment: 'right', bold: true }
               ]),
-              [{ text: 'TOTAL', colSpan: 3, bold: true }, {}, {}, guia.total_final, {}],
+              [
+                { text: 'TOTAL GENERAL', colSpan: 5, bold: true, alignment: 'right' }, 
+                {}, {}, {}, {}, 
+                { text: `S/ ${Number(guia.total_final).toFixed(2)}`, alignment: 'right', bold: true, fontSize: 13 }
+              ],
             ],
           },
         },

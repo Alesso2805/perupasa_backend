@@ -14,6 +14,7 @@ export class CreateGuiaDto {
   items: {
     productoId: number;
     cantidad: number;
+    unidad?: string;
     colores: { colorId: number; cantidad: number }[];
   }[];
 }
@@ -71,6 +72,7 @@ export class SalesService {
         const detalle = new DetalleGuia();
         detalle.producto = producto;
         detalle.cantidad = itemDto.cantidad;
+        detalle.unidad = itemDto.unidad || 'Piezas';
         detalle.precio_unitario = precioEntity.valor_soles;
         detalle.subtotal = detalle.cantidad * detalle.precio_unitario;
         detalle.colores = [];
@@ -101,6 +103,14 @@ export class SalesService {
     } finally {
       await queryRunner.release();
     }
+  }
+
+  async findNextNumber() {
+    const lastGuia = await this.guiaRepo.findOne({
+      where: {},
+      order: { numero_guia: 'DESC' },
+    });
+    return (lastGuia?.numero_guia ?? 0) + 1;
   }
 
   async findAll() {

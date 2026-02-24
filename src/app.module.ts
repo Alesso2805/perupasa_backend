@@ -10,7 +10,7 @@ import { SalesModule } from './sales/sales.module';
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'localhost',
-      port: 5432,
+      port: 5433,
       username: 'admin',
       password: 'password123',
       database: 'perupasatex',

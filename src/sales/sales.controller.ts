@@ -15,6 +15,11 @@ export class SalesController {
     return this.salesService.createGuia(createGuiaDto);
   }
 
+  @Get('next-number')
+  getNextNumber() {
+    return this.salesService.findNextNumber();
+  }
+
   @Get()
   findAll() {
     return this.salesService.findAll();
