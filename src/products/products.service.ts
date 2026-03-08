@@ -202,6 +202,34 @@ export class ProductsService implements OnModuleInit {
       { code: '107', name: 'Cinta Metálica 107 x Metro', cat: 'Cinta', price: 5.00 },
     ];
 
+    const generalPricesMap: Record<string, number> = {
+      '490-C': 12.9, '490-B': 14.1, '491-C': 11.9, '491-B': 18.9, '492-C': 18.9, '492-B': 23.5,
+      '493-C': 30.7, '493-B': 34.5, '494-C': 43.5, '494-B': 50.9,
+      '433': 12.5, '435': 18.5, '438': 25.9, '443': 19.0,
+      '482-DP': 11.0, '482-COL': 15.0, '483-DP': 12.0, '483-COL': 16.0, '485-DP': 16.0,
+      '485-COL': 20.0, '487-DP': 21.0, '487-COL': 25.0, '460': 21.0, '511-DP': 31.0, '511-COL': 35.0,
+      'RUF-6-C': 4.3, 'RUF-6-B': 5.4, 'RUF-3-C': 2.6, 'RUF-3-B': 3.2,
+      'PAN-ANG-C': 3.5, 'PAN-ANG-B': 4.5, 'PAN-ANC-C': 4.3, 'PAN-ANC-B': 5.4,
+      'PAN-ANCZ-C': 4.9, 'PAN-ANCZ-B': 7.6, 'PAN-ANGT-C': 3.6, 'PAN-ANGT-B': 4.6,
+      '103': 3.0, '105': 3.5, '107': 4.5,
+      'PLU-3000-DS': 7.9, 'PLU-3000-DP': 6.5, 'PLU-3000-S1': 17.5,
+      'POM-445-DS': 7.3, 'POM-445-DP': 5.3,
+      '691-METRO': 0.25, '692-10M': 6.9, '692-PURA': 10.5, '692-ESP': 8.9, '694-10M': 14.0,
+      '696-10M': 19.0, '698-10M': 28.0, '690-12': 6.5,
+      '674-10M': 12.0, '676-10M': 18.0, '678-20M': 27.0,
+      'CUR-LUR-2': 6.5, '716-20-DP': 35.0, '716-20-COL': 40.0, '716-18-DP': 30.0, '716-18-COL': 35.0,
+      'ALG-8': 22.0, 'ALG-12': 26.0,
+      'FLE-SS-8': 20.5, 'FLE-SS-11': 22.5, 'FLE-SS-13': 24.9,
+      '353-2': 1.7, '353-4': 3.9, '353-6': 4.6, '353-8': 5.3, '353-12': 7.9,
+      '215-P': 2.3, '238-P': 5.2, '240-P': 4.5, '220': 25.0, '440-20': 28.0, '440-10': 14.5,
+      '268': 26.0, '269': 29.0, 'BLONDA-ANG': 0.4, 'BLONDA-MARIA': 0.8, 'BLONDA-TR-POLI': 0.8,
+      'BLONDA-TR-PL': 0.9, 'TRINCHECITO': 0.9, '442': 4.0,
+      '330-PL': 5.0, '364': 2.2, '383': 2.5, '385': 3.5, '387': 4.5, '342-LP': 25.0,
+      '403': 19.9, '405': 25.5, '408': 37.0, '421': 41.5, '444': 24.5,
+      '430-S': 12.9, '430-S-LUR': 13.5, '430-4-S': 19.5, '430-2-P': 10.9, '430-2-P-LUR': 11.5, '430-4-P': 12.9,
+      '414': 18.9, '418': 34.9, '411': 40.9, '415': 75.9, '417': 95.9, 'CADENETA-100': 25.0,
+    };
+
     for (const item of catalog) {
       let product = await this.productRepo.findOneBy({ codigo_articulo: item.code });
       if (!product) {
@@ -233,13 +261,15 @@ export class ProductsService implements OnModuleInit {
         await this.priceRepo.save(copasaPrice);
       }
 
-      // Upsert GENERAL Price (1.25 * Copasa)
+      // Upsert GENERAL Price
       const generalPrice = await this.priceRepo.findOneBy({
         producto: { id: product.id },
         tipo_lista: TipoLista.GENERAL,
       });
 
-      const generalVal = +(item.price * 1.25).toFixed(2);
+      // Use explicit general price if available, otherwise fall back to 1.25 * Copasa
+      const generalVal = generalPricesMap[item.code] ?? +(item.price * 1.25).toFixed(2);
+
       if (!generalPrice) {
         await this.priceRepo.save({
           producto: product,

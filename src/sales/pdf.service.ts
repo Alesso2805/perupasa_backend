@@ -2,27 +2,22 @@ import { Injectable } from '@nestjs/common';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const PdfPrinter = require('pdfmake/js/Printer').default;
 import { GuiaVenta } from '../entities/guia-venta.entity';
+import * as fs from 'fs';
 
 @Injectable()
 export class PdfService {
   private printer: any;
 
   constructor() {
-const fonts = {
+    const path = require('path');
+    const fonts = {
       Roboto: {
-        normal: 'fonts/Roboto-Regular.ttf',
-        bold: 'fonts/Roboto-Medium.ttf',
-        italics: 'fonts/Roboto-Italic.ttf',
-        bolditalics: 'fonts/Roboto-MediumItalic.ttf',
+        normal: path.join(process.cwd(), 'fonts', 'Roboto-Regular.ttf'),
+        bold: path.join(process.cwd(), 'fonts', 'Roboto-Medium.ttf'),
+        italics: path.join(process.cwd(), 'fonts', 'Roboto-Italic.ttf'),
+        bolditalics: path.join(process.cwd(), 'fonts', 'Roboto-MediumItalic.ttf'),
       },
     };
-    // For server-side pdfmake, we usually need local fonts or standard fonts.
-    // Using standard standard fonts to avoid filesystem issues for now, or just mock it.
-    // Actually pdfmake server side needs local files usually.
-    // Let's use standard fonts helper or just define Roboto if we have it.
-    // For simplicity in this environment, I'll rely on default font handling or try to load from buffer if needed.
-    // But standard way is passing font descriptors.
-    // Let's assume we can use a basic setup.
     this.printer = new PdfPrinter(fonts);
   }
 
@@ -46,11 +41,11 @@ const fonts = {
               ['Cant.', 'Descripción', 'Color', 'Unid.', 'Precio', 'Subtotal'],
               ...guia.detalles.map((d) => [
                 d.cantidad,
-                d.producto.nombre,
-                d.colores.map(c => c.color.numero_color).join(', '),
-                { text: d.unidad, fontSize: 8 },
-                { text: `S/ ${Number(d.precio_unitario).toFixed(2)}`, alignment: 'right' },
-                { text: `S/ ${Number(d.subtotal).toFixed(2)}`, alignment: 'right', bold: true }
+                d.producto?.nombre || 'Producto no encontrado',
+                d.colores?.map(c => c.color?.numero_color ?? 'N/A').join(', ') || 'N/A',
+                { text: d.unidad || 'Unid.', fontSize: 8 },
+                { text: `S/ ${Number(d.precio_unitario || 0).toFixed(2)}`, alignment: 'right' },
+                { text: `S/ ${Number(d.subtotal || 0).toFixed(2)}`, alignment: 'right', bold: true }
               ]),
               [
                 { text: 'TOTAL GENERAL', colSpan: 5, bold: true, alignment: 'right' }, 
@@ -76,12 +71,20 @@ const fonts = {
       },
     };
 
-    return new Promise((resolve) => {
-      const pdfDoc = this.printer.createPdfKitDocument(docDefinition);
-      const chunks: Buffer[] = [];
-      pdfDoc.on('data', (chunk) => chunks.push(chunk));
-      pdfDoc.on('end', () => resolve(Buffer.concat(chunks)));
-      pdfDoc.end();
+    return new Promise(async (resolve, reject) => {
+      try {
+        const pdfDoc = await this.printer.createPdfKitDocument(docDefinition);
+        const chunks: Buffer[] = [];
+        
+        pdfDoc.on('data', (chunk) => chunks.push(chunk));
+        pdfDoc.on('end', () => resolve(Buffer.concat(chunks)));
+        pdfDoc.on('error', (err) => reject(err));
+        
+        pdfDoc.end();
+      } catch (err) {
+        fs.appendFileSync('pdf_error.txt', `[${new Date().toISOString()}] Error: ${err.message}\nStack: ${err.stack}\n`);
+        reject(err);
+      }
     });
   }
 }

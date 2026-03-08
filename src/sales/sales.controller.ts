@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Param, Res, NotFoundException } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, Res, NotFoundException, Delete } from '@nestjs/common';
 import { SalesService, CreateGuiaDto } from './sales.service';
 import { PdfService } from './pdf.service';
 import type { Response } from 'express';
@@ -39,5 +39,10 @@ export class SalesController {
     });
 
     res.end(buffer);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.salesService.remove(+id);
   }
 }

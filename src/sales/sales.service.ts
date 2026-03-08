@@ -118,4 +118,19 @@ export class SalesService {
       relations: ['detalles', 'detalles.producto', 'detalles.colores', 'detalles.colores.color'],
     });
   }
+
+  async remove(id: number) {
+    const guia = await this.guiaRepo.findOne({
+      where: { id },
+      relations: ['detalles', 'detalles.colores'],
+    });
+
+    if (!guia) {
+      throw new NotFoundException(`Guia con ID ${id} no encontrada`);
+    }
+
+    // Since `detalles` and `colores` relations are loaded and have `cascade: true`,
+    // TypeORM should remove them automatically.
+    return this.guiaRepo.remove(guia);
+  }
 }
