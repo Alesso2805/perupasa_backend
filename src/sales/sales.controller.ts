@@ -1,8 +1,10 @@
-import { Controller, Post, Body, Get, Param, Res, NotFoundException, Delete } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, Res, NotFoundException, Delete, UseGuards } from '@nestjs/common';
 import { SalesService, CreateGuiaDto } from './sales.service';
 import { PdfService } from './pdf.service';
 import type { Response } from 'express';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
+@UseGuards(JwtAuthGuard)
 @Controller('sales')
 export class SalesController {
   constructor(
